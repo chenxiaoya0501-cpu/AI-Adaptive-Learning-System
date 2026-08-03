@@ -43,18 +43,35 @@ Copy-Item -Path "$($sourceRoot.FullName)\*" -Destination $Target -Recurse -Force
 New-Item -ItemType File -Path "$Target\.deployment-marker" -Force | Out-Null
 
 Write-Step "Preparing Python runtime"
-$pythonCandidates = @("D:\python311\python.exe", "python.exe", "py.exe")
-$python = $null
-foreach ($candidate in $pythonCandidates) {
-    try {
-        $resolved = Get-Command $candidate -ErrorAction Stop
-        $python = $resolved.Source
-        break
-    } catch {}
+$pythonRoot = "$Target\.runtime\python"
+$python = "$pythonRoot\python.exe"
+if (-not (Test-Path $python)) {
+    New-Item -ItemType Directory -Path "$Target\.runtime" -Force | Out-Null
+    $pythonInstaller = Join-Path $tempRoot "python-installer.exe"
+    Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe" -OutFile $pythonInstaller -UseBasicParsing
+    $installArgs = @(
+        "/quiet",
+        "InstallAllUsers=0",
+        "TargetDir=$pythonRoot",
+        "Include_pip=1",
+        "Include_test=0",
+        "Include_launcher=0",
+        "InstallLauncherAllUsers=0",
+        "PrependPath=0",
+        "Shortcuts=0"
+    )
+    $pythonInstall = Start-Process -FilePath $pythonInstaller -ArgumentList $installArgs -Wait -PassThru
+    if ($pythonInstall.ExitCode -ne 0 -or -not (Test-Path $python)) {
+        throw "Could not install the isolated Python runtime (exit code $($pythonInstall.ExitCode))"
+    }
 }
-if (-not $python) { throw "Python 3 was not found" }
 $venvPython = "$Target\.venv\Scripts\python.exe"
-if (-not (Test-Path $venvPython)) { & $python -m venv "$Target\.venv" }
+if (-not (Test-Path $venvPython)) {
+    & $python -m venv "$Target\.venv"
+    if ($LASTEXITCODE -ne 0 -or -not (Test-Path $venvPython)) {
+        throw "Could not create the isolated Python virtual environment"
+    }
+}
 & $venvPython -m pip install --upgrade pip
 & $venvPython -m pip install -r "$Target\apps\backend\requirements-demo.txt"
 
