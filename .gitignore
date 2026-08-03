@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+.vite/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Environment
+.env
+!.env.example
+
+# Uploads
+uploads/
+
+# Data files
+data/raw/*.pdf
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary and generated inspection files
+.tmp/
+.tmp_*/
+*.inspect.ndjson
+*.log
+apps/backend/test_imgs/
+apps/backend/test_p3/
+apps/backend/test_q8_imgs/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,268 @@
+.goal-list-page {
+  max-width: 920px;
+}
+
+.goal-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.goal-empty {
+  background: #fff;
+  border-radius: 16px;
+  padding: 48px 24px;
+  box-shadow: 0 8px 28px rgba(15, 61, 62, 0.06);
+}
+
+.goal-card-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.goal-card {
+  position: relative;
+  display: flex;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(15, 61, 62, 0.07);
+  border: 1px solid rgba(15, 118, 110, 0.08);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.goal-card:hover {
+  box-shadow: 0 12px 36px rgba(15, 61, 62, 0.12);
+  transform: translateY(-1px);
+}
+
+.goal-card--primary {
+  border-color: rgba(15, 118, 110, 0.28);
+  background: linear-gradient(135deg, #ffffff 0%, #f3faf8 55%, #fffaf2 100%);
+}
+
+.goal-card__accent {
+  width: 6px;
+  flex-shrink: 0;
+  background: linear-gradient(180deg, #0f766e 0%, #2a9d8f 55%, #e9c46a 100%);
+}
+
+.goal-card--primary .goal-card__accent {
+  width: 8px;
+}
+
+.goal-card__body {
+  flex: 1;
+  padding: 20px 22px 16px;
+  min-width: 0;
+}
+
+.goal-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.goal-card__title-row {
+  min-width: 0;
+}
+
+.goal-card__title {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 650;
+  color: #14363a;
+  line-height: 1.35;
+}
+
+.goal-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.goal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: #3d5a5c;
+  background: #eef4f3;
+}
+
+.goal-badge--primary {
+  color: #0b5f58;
+  background: rgba(15, 118, 110, 0.12);
+  font-weight: 600;
+}
+
+.goal-badge--warn {
+  color: #9a5b00;
+  background: #fff3d9;
+}
+
+.goal-card__score {
+  flex-shrink: 0;
+  text-align: right;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(15, 118, 110, 0.08);
+  min-width: 72px;
+}
+
+.goal-card__score-label {
+  display: block;
+  font-size: 12px;
+  color: #5a7779;
+  margin-bottom: 2px;
+}
+
+.goal-card__score-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f766e;
+  line-height: 1.1;
+}
+
+.goal-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.goal-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #4a6466;
+  font-size: 14px;
+}
+
+.goal-meta-item .anticon {
+  color: #0f766e;
+}
+
+.goal-card__hint {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #c2410c;
+}
+
+.goal-results {
+  margin: 4px 0 14px;
+  padding: 12px 12px 8px;
+  border-radius: 12px;
+  background: #f7fbfa;
+  border: 1px solid rgba(15, 118, 110, 0.1);
+}
+
+.goal-results__title {
+  font-size: 13px;
+  font-weight: 650;
+  color: #14363a;
+  margin-bottom: 8px;
+}
+
+.goal-results__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.goal-results__btn {
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  background: #fff;
+  border-radius: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.goal-results__btn:hover {
+  border-color: rgba(15, 118, 110, 0.28);
+  background: #eef7f5;
+}
+
+.goal-results__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.goal-results__tag {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.goal-results__tag--submitted,
+.goal-results__tag--assembled {
+  background: rgba(37, 99, 235, 0.1);
+  color: #1d4ed8;
+}
+
+.goal-results__tag--graded {
+  background: rgba(15, 118, 110, 0.12);
+  color: #0f766e;
+}
+
+.goal-results__tag--taking {
+  background: rgba(194, 65, 12, 0.12);
+  color: #c2410c;
+}
+
+.goal-results__time {
+  font-size: 12px;
+  color: #6b8587;
+  flex-shrink: 0;
+}
+
+.goal-results__summary {
+  display: block;
+  font-size: 13px;
+  color: #3d5a5c;
+  line-height: 1.45;
+}
+
+.goal-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(15, 61, 62, 0.06);
+}
+
+@media (max-width: 640px) {
+  .goal-list-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .goal-card__top {
+    flex-direction: column;
+  }
+
+  .goal-card__score {
+    text-align: left;
+    align-self: flex-start;
+  }
+}

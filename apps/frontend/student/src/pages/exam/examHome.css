@@ -1,0 +1,364 @@
+.exam-page {
+  max-width: 920px;
+}
+
+.exam-page--center {
+  display: flex;
+  justify-content: center;
+  padding: 80px 0;
+}
+
+.exam-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.exam-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px 22px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(15, 118, 110, 0.1);
+  box-shadow: 0 8px 28px rgba(15, 61, 62, 0.06);
+}
+
+.exam-card--result {
+  background: linear-gradient(180deg, #f7fbfa 0%, #ffffff 40%);
+}
+
+.exam-card__title {
+  margin: 0 0 12px;
+  font-size: 16px;
+  font-weight: 650;
+  color: #14363a;
+}
+
+.exam-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.exam-result-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.exam-result-summary__stats {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #14363a;
+  letter-spacing: 0.01em;
+}
+
+.exam-result-summary__stats strong {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f766e;
+}
+
+.exam-result-summary__note {
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b8587;
+}
+
+.exam-result-summary .ant-alert {
+  margin: 0;
+}
+
+.exam-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #3d5a5c;
+  font-size: 14px;
+}
+
+.exam-muted {
+  color: #6b8587;
+  font-size: 13px;
+  margin: 0;
+}
+
+.exam-tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(15, 118, 110, 0.1);
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.exam-type-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.exam-type-chip {
+  min-width: 120px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f3faf8;
+  border: 1px solid rgba(15, 118, 110, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: #3d5a5c;
+}
+
+.exam-type-chip strong {
+  color: #14363a;
+  font-size: 15px;
+}
+
+.exam-q-scroll {
+  max-height: min(52vh, 520px);
+  overflow-y: auto;
+  margin-top: 12px;
+  padding: 4px 8px 8px 2px;
+  border: 1px solid rgba(15, 61, 62, 0.08);
+  border-radius: 12px;
+  background: #f7faf9;
+  scrollbar-gutter: stable;
+}
+
+.exam-q-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.exam-q-scroll::-webkit-scrollbar-thumb {
+  background: rgba(15, 118, 110, 0.28);
+  border-radius: 999px;
+}
+
+.exam-q-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.exam-start-bar {
+  display: flex;
+  justify-content: center;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(15, 61, 62, 0.08);
+}
+
+.exam-start-bar .ant-btn {
+  min-width: 168px;
+  height: 44px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.exam-q-item {
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid rgba(15, 61, 62, 0.08);
+}
+
+.exam-q-item__meta {
+  font-size: 12px;
+  color: #6b8587;
+  margin-bottom: 8px;
+}
+
+.exam-q-item__content {
+  font-size: 14px;
+  color: #1f3335;
+  line-height: 1.6;
+  overflow-x: auto;
+}
+
+.rich-q-content {
+  white-space: pre-wrap;
+  line-height: 2.0;
+  word-break: break-word;
+}
+
+/* 行内公式：保留后端按 pt 算出的宽高，只做上限保护（勿再压成 em） */
+.rich-q-content .rich-q-img--inline {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 3px;
+  max-height: 30px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+/* 独立示意图：几何 / 函数图 / 数轴 / 行程图 */
+.rich-q-content .rich-q-img--block {
+  display: block;
+  margin: 6px 0;
+  max-width: min(100%, 320px);
+  max-height: 150px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.rich-q-content__missing {
+  color: #b45309;
+  font-size: 12px;
+}
+
+.exam-q-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.exam-q-options {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.exam-q-options li {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  line-height: 2.0;
+}
+
+.exam-q-options .rich-q-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 选项中的数轴/示意图：可读即可，不必占满整卡 */
+.exam-q-options .rich-q-img--block {
+  max-width: 220px;
+  max-height: 90px;
+}
+
+.exam-q-options .rich-q-img--inline {
+  max-height: 28px;
+}
+
+.exam-q-options__key {
+  flex-shrink: 0;
+  font-weight: 600;
+  color: #14363a;
+  line-height: 2.0;
+}
+
+.exam-history__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.exam-history__stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+  font-size: 13px;
+  color: #3d5a5c;
+}
+
+.exam-history__stat {
+  font-weight: 650;
+}
+
+.exam-history__stat--idle {
+  color: #6b8587;
+}
+
+.exam-history__stat--testing {
+  color: #c2410c;
+}
+
+.exam-history__stat--tested {
+  color: #0f766e;
+}
+
+.exam-history {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.exam-history__row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.exam-history__btn {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+  border: 1px solid rgba(15, 118, 110, 0.12);
+  background: #f8fbfa;
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  font: inherit;
+  color: #14363a;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.exam-history__btn:hover {
+  background: #eef7f5;
+  border-color: rgba(15, 118, 110, 0.28);
+}
+
+.exam-history__btn.is-selected {
+  background: #e6f4f1;
+  border-color: rgba(15, 118, 110, 0.45);
+  box-shadow: inset 3px 0 0 #0f766e;
+  font-weight: 600;
+}
+
+.exam-history__btn.is-selected:hover {
+  background: #dcefeb;
+  border-color: rgba(15, 118, 110, 0.55);
+}
+
+.exam-history__status {
+  font-weight: 650;
+}
+
+.exam-history__status--idle {
+  color: #6b8587;
+}
+
+.exam-history__status--testing {
+  color: #c2410c;
+}
+
+.exam-history__status--tested {
+  color: #0f766e;
+}

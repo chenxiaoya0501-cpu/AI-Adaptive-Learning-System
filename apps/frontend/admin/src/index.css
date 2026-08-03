@@ -1,0 +1,29 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+#root {
+  height: 100vh;
+}
+
+/* 题库列表公式与表格正文字号一致（覆盖 KaTeX 默认 1.21em） */
+.katex-answer {
+  font-size: inherit;
+  line-height: inherit;
+}
+.katex-answer .katex {
+  font-size: 1em;
+}
+/* 分式与正文字号对齐，垂直居中于行内 */
+.katex-answer .katex .frac-line {
+  border-bottom-width: 0.06em;
+}
+.katex-answer .mfrac {
+  vertical-align: middle;
+}
