@@ -1,3 +1,4 @@
+import mimetypes
 from pathlib import Path
 
 from fastapi import HTTPException
@@ -6,6 +7,9 @@ from fastapi.staticfiles import StaticFiles
 
 from app.main import app
 
+
+mimetypes.add_type("text/javascript", ".js")
+mimetypes.add_type("text/javascript", ".mjs")
 
 APPS_DIR = Path(__file__).resolve().parents[2]
 STUDENT_DIST = APPS_DIR / "frontend" / "student" / "dist"
