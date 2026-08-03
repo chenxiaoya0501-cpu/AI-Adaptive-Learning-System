@@ -72,6 +72,7 @@ Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction Silent
 $launcherPath = "$Target\.runtime\start_demo.py"
 $launcher = @(
     "import sys",
+    "sys.path.insert(0, r'$Target\apps\backend')",
     "sys.path.insert(0, r'$runtimePackages')",
     "import uvicorn",
     "uvicorn.run('app.demo:app', host='0.0.0.0', port=$Port)"
