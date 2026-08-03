@@ -51,8 +51,11 @@ if ($LASTEXITCODE -ne 0) {
 }
 $runtimePackages = "$Target\.runtime\python-packages"
 New-Item -ItemType Directory -Path $runtimePackages -Force | Out-Null
-& $python -m pip install --upgrade --target $runtimePackages -r "$Target\apps\backend\requirements-demo.txt"
+& $python -m pip install --ignore-installed --upgrade --target $runtimePackages -r "$Target\apps\backend\requirements-demo.txt"
 if ($LASTEXITCODE -ne 0) { throw "Could not install backend dependencies" }
+$env:PYTHONPATH = $runtimePackages
+& $python -c "import fitz, fastapi, sqlalchemy, uvicorn"
+if ($LASTEXITCODE -ne 0) { throw "Backend dependency verification failed" }
 
 Write-Step "Installing prebuilt frontends"
 $studentPrebuilt = "$Target\deploy\prebuilt\student"
