@@ -53,8 +53,7 @@ $runtimePackages = "$Target\.runtime\python-packages"
 New-Item -ItemType Directory -Path $runtimePackages -Force | Out-Null
 & $python -m pip install --ignore-installed --upgrade --target $runtimePackages -r "$Target\apps\backend\requirements-demo.txt"
 if ($LASTEXITCODE -ne 0) { throw "Could not install backend dependencies" }
-$env:PYTHONPATH = $runtimePackages
-& $python -c "import fitz, fastapi, sqlalchemy, uvicorn"
+& $python -c "import sys; sys.path.insert(0, r'$runtimePackages'); import fitz, fastapi, sqlalchemy, uvicorn"
 if ($LASTEXITCODE -ne 0) { throw "Backend dependency verification failed" }
 
 Write-Step "Installing prebuilt frontends"
@@ -70,15 +69,15 @@ Copy-Item -Path "$adminPrebuilt\*" -Destination "$Target\apps\frontend\admin\dis
 
 Write-Step "Registering Windows startup task"
 Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue
-$launcherPath = "$Target\.runtime\start-demo.cmd"
+$launcherPath = "$Target\.runtime\start_demo.py"
 $launcher = @(
-    "@echo off",
-    "set `"PYTHONPATH=$runtimePackages`"",
-    "cd /d `"$Target\apps\backend`"",
-    "`"$python`" -m uvicorn app.demo:app --host 0.0.0.0 --port $Port"
+    "import sys",
+    "sys.path.insert(0, r'$runtimePackages')",
+    "import uvicorn",
+    "uvicorn.run('app.demo:app', host='0.0.0.0', port=$Port)"
 )
-Set-Content -LiteralPath $launcherPath -Value $launcher -Encoding Ascii
-$action = New-ScheduledTaskAction -Execute "cmd.exe" -Argument "/c `"$launcherPath`"" -WorkingDirectory "$Target\apps\backend"
+Set-Content -LiteralPath $launcherPath -Value $launcher -Encoding UTF8
+$action = New-ScheduledTaskAction -Execute $python -Argument "`"$launcherPath`"" -WorkingDirectory "$Target\apps\backend"
 $trigger = New-ScheduledTaskTrigger -AtStartup
 $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
 Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger -Principal $principal -Description "AI adaptive learning demo" | Out-Null
