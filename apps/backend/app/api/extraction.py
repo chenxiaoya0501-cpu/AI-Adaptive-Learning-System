@@ -58,13 +58,28 @@ async def start_extraction(
         raise HTTPException(status_code=400, detail=f"不支持的任务类型: {data.task_type}")
 
     file_ids_str = ""
+    selected_files: List[UploadedFile] = []
     if data.source_file_ids:
         for fid in data.source_file_ids:
             result = await db.execute(select(UploadedFile).where(UploadedFile.id == fid))
             file_record = result.scalar_one_or_none()
             if not file_record:
                 raise HTTPException(status_code=404, detail=f"源文件ID={fid}不存在")
+            selected_files.append(file_record)
         file_ids_str = ",".join(str(fid) for fid in data.source_file_ids)
+
+    if data.task_type == "knowledge_extraction":
+        if not selected_files:
+            raise HTTPException(status_code=400, detail="知识点抽取请选择课程标准PDF文件")
+        invalid_files = [f.original_name for f in selected_files if f.file_type != "curriculum"]
+        if invalid_files:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "知识点抽取只能处理标记为‘课程标准’的文件。"
+                    f"请先在资料上传中修正文件类型：{'、'.join(invalid_files)}"
+                ),
+            )
 
     if data.task_type == "chapter_toc_extraction" and not data.source_file_ids:
         raise HTTPException(status_code=400, detail="章节目录抽取请选择已上传的PDF文件")

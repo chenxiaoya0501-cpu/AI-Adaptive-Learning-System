@@ -246,6 +246,29 @@ async def _extract_knowledge_merged(db: AsyncSession, task: ExtractionTask, llm:
 
     # 仅处理课标文件（教材标注已独立为annotation_service）
     curriculum_files = [f for f in file_records if f.file_type == "curriculum"]
+    if not curriculum_files:
+        task.status = "failed"
+        task.completed_at = datetime.now()
+        task.error_message = "选中的文件不是课程标准文件，请先在资料上传中修正文件类型"
+        task.result_summary = {"extracted_points": 0, "total_files": 0}
+        await db.commit()
+        return
+
+    missing_files = [
+        f.original_name or f.filename
+        for f in curriculum_files
+        if not os.path.exists(os.path.join(settings.UPLOAD_DIR, f.filename))
+    ]
+    if missing_files:
+        task.status = "failed"
+        task.completed_at = datetime.now()
+        task.error_message = f"源文件不存在或部署时未保留：{'、'.join(missing_files)}"
+        task.result_summary = {
+            "extracted_points": 0,
+            "total_files": len(curriculum_files),
+        }
+        await db.commit()
+        return
 
     # 预加载已有知识点（用于去重和补充）
     existing_result = await db.execute(select(KnowledgePoint))
@@ -261,7 +284,7 @@ async def _extract_knowledge_merged(db: AsyncSession, task: ExtractionTask, llm:
     for file_record in curriculum_files:
         pdf_path = os.path.join(settings.UPLOAD_DIR, file_record.filename)
         if not os.path.exists(pdf_path):
-            continue
+            raise FileNotFoundError(f"源文件不存在：{file_record.original_name or file_record.filename}")
 
         file_record.status = "parsing"
         task.progress = 2
@@ -483,6 +506,19 @@ async def _extract_knowledge_merged(db: AsyncSession, task: ExtractionTask, llm:
         file_record.status = "parsed"
         current_step += 1
         await db.commit()
+
+    # 没有任何知识点时不能把任务标记为成功，否则管理端会出现“完成但无数据”。
+    if not existing_points:
+        task.status = "failed"
+        task.progress = 100
+        task.completed_at = datetime.now()
+        task.error_message = "未从课程标准文件中抽取到任何知识点，请检查PDF内容和大模型配置"
+        task.result_summary = {
+            "extracted_points": 0,
+            "total_files": len(curriculum_files),
+        }
+        await db.commit()
+        return
 
     # 完成
     task.status = "completed"

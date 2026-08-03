@@ -47,7 +47,8 @@ export default function FileUpload() {
   }
 
   const guessFileType = (filename: string, selected: string) => {
-    // 文件名含课本/教材时自动归为教材，避免误选课标导致后续选不到
+    // 明确的课程标准名称优先，避免旧选择状态把课标误传为教材。
+    if (/课程标准|课程方案|课标/.test(filename)) return 'curriculum'
     if (/课本|教材|电子书/.test(filename)) return 'textbook'
     return selected
   }
@@ -59,7 +60,7 @@ export default function FileUpload() {
     formData.append('file', file)
     formData.append('file_type', resolvedType)
     if (resolvedType !== uploadType) {
-      message.info(`${file.name} 已按文件名识别为「教材」`)
+      message.info(`${file.name} 已按文件名识别为「${resolvedType === 'curriculum' ? '课程标准' : '教材'}」`)
     }
 
     // 优先使用手动选择的值，否则从文件名自动解析

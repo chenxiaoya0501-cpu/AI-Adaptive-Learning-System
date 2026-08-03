@@ -74,6 +74,7 @@ export default function ExtractionTasks() {
 
   // 章节目录：从资料上传的全部 PDF 中选（不强制 file_type=textbook，避免课本被误标课标后选不到）
   const chapterSourceFiles = files
+  const knowledgeSourceFiles = files.filter((f: any) => f.file_type === 'curriculum')
 
   const handleDeleteTask = async (id: number) => {
     try {
@@ -246,7 +247,7 @@ export default function ExtractionTasks() {
           <li>先在「系统配置 → 运行设置」中配置大模型（章节目录抽取不依赖大模型）</li>
           <li>在「资料上传」中上传课程标准PDF或教材PDF</li>
           <li>「章节目录抽取」：选择教材PDF，抽取章/节目录，结果在「章节目录」查看编辑</li>
-          <li>「知识点抽取」：选择课标/教材PDF，抽取知识点</li>
+          <li>「知识点抽取」：选择课程标准PDF，抽取知识点</li>
           <li>「关系抽取」：分析已有知识点之间的依赖关系</li>
         </ol>
       </Card>
@@ -293,12 +294,17 @@ export default function ExtractionTasks() {
                 value={selectedFileIds}
                 onChange={setSelectedFileIds}
               >
-                {files.map(f => (
+                {knowledgeSourceFiles.map(f => (
                   <Option key={f.id} value={f.id}>
                     {f.original_name} ({f.file_type === 'curriculum' ? '课标' : '教材'}{f.grade ? ` ${f.grade}年级` : ''})
                   </Option>
                 ))}
               </Select>
+              {knowledgeSourceFiles.length === 0 && (
+                <div style={{ color: '#cf1322', marginTop: 8 }}>
+                  暂无课程标准文件，请先到“资料上传”将课标PDF类型设置为“课程标准”
+                </div>
+              )}
             </div>
           )}
 

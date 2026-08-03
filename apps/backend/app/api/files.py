@@ -1,4 +1,5 @@
 import os
+import re
 import uuid
 from typing import List, Optional
 from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
@@ -12,6 +13,21 @@ from app.config import settings
 
 router = APIRouter()
 
+VALID_FILE_TYPES = {"curriculum", "textbook"}
+CURRICULUM_NAME_RE = re.compile(r"课程标准|课程方案|课标")
+TEXTBOOK_NAME_RE = re.compile(r"课本|教材|电子书")
+
+
+def infer_upload_file_type(filename: str, requested_type: str) -> str:
+    """用明确的文件名特征兜底，避免旧前端或误选破坏资料分类。"""
+    if requested_type not in VALID_FILE_TYPES:
+        raise ValueError("file_type 只能是 curriculum 或 textbook")
+    if CURRICULUM_NAME_RE.search(filename):
+        return "curriculum"
+    if TEXTBOOK_NAME_RE.search(filename):
+        return "textbook"
+    return requested_type
+
 
 @router.post("/upload", response_model=UploadedFileResponse)
 async def upload_file(
@@ -23,6 +39,10 @@ async def upload_file(
 ):
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="仅支持PDF文件")
+    try:
+        resolved_file_type = infer_upload_file_type(file.filename, file_type)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
     ext = os.path.splitext(file.filename)[1]
@@ -36,7 +56,7 @@ async def upload_file(
     record = UploadedFileModel(
         filename=saved_name,
         original_name=file.filename,
-        file_type=file_type,
+        file_type=resolved_file_type,
         file_size=len(content),
         grade=grade,
         semester=semester,

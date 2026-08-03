@@ -88,11 +88,9 @@ async def run_chapter_toc_extraction(task_id: int):
                     file_results.append({"file_id": fid, "ok": False, "reason": "文件不存在"})
                     continue
 
-                # 章节目录抽取允许从资料上传中的任意 PDF 选择；
-                # 若原标记为课标但实际是课本，抽取时纠正为教材，便于章节目录页展示
-                if file_record.file_type != "textbook":
-                    file_record.file_type = "textbook"
-                    logger.info(f"文件{fid}已标记为教材（章节目录抽取）")
+                # 章节目录抽取允许管理员从任意 PDF 尝试识别目录，但绝不能
+                # 顺带修改资料类型。课程标准一旦被改成教材，后续知识抽取会
+                # 因筛选不到 curriculum 文件而出现“完成 0 个知识点”的假成功。
 
                 pdf_path = os.path.join(settings.UPLOAD_DIR, file_record.filename)
                 if not os.path.exists(pdf_path):

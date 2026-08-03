@@ -96,6 +96,44 @@ async def ensure_sqlite_columns(conn: AsyncConnection):
     except Exception as e:
         logger.warning(f"迁移 llm_model 跳过: {e}")
 
+    # 修复旧版本中“章节目录抽取”误改的资料类型。只根据明确的文件名
+    # 关键词修正，避免把普通资料擅自归类。
+    try:
+        curriculum_result = await conn.execute(
+            text(
+                """
+                UPDATE uploaded_files
+                SET file_type = 'curriculum'
+                WHERE file_type != 'curriculum'
+                  AND (
+                    original_name LIKE '%课程标准%'
+                    OR original_name LIKE '%课程方案%'
+                    OR original_name LIKE '%课标%'
+                  )
+                """
+            )
+        )
+        textbook_result = await conn.execute(
+            text(
+                """
+                UPDATE uploaded_files
+                SET file_type = 'textbook'
+                WHERE file_type != 'textbook'
+                  AND (
+                    original_name LIKE '%课本%'
+                    OR original_name LIKE '%教材%'
+                    OR original_name LIKE '%电子书%'
+                  )
+                  AND original_name NOT LIKE '%课程标准%'
+                """
+            )
+        )
+        fixed_count = (curriculum_result.rowcount or 0) + (textbook_result.rowcount or 0)
+        if fixed_count:
+            logger.info(f"已按明确文件名修复 {fixed_count} 条上传资料类型")
+    except Exception as e:
+        logger.warning(f"迁移 uploaded_files.file_type 跳过: {e}")
+
     # 回填组卷快照的源试卷 ID（供学生端解析 [IMG:] 图片）
     try:
         result = await conn.execute(text("PRAGMA table_info(test_questions)"))
