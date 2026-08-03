@@ -49,7 +49,7 @@ Copy-Item -Path "$($SourceRoot.FullName)\deploy\prebuilt\admin\*" -Destination "
 
 Write-Step "Checking Python dependencies"
 New-Item -ItemType Directory -Path $RuntimePackages -Force | Out-Null
-& $Python -c "import sys; sys.path.insert(0, r'$RuntimePackages'); import fitz, fastapi, sqlalchemy, uvicorn"
+& $Python -c "import sys; sys.path.insert(0, r'$RuntimePackages'); import easyocr, fitz, fastapi, sqlalchemy, uvicorn"
 if ($LASTEXITCODE -ne 0) {
     Write-Host "A required package is missing; repairing dependencies..." -ForegroundColor Yellow
     & $Python -m pip install --ignore-installed --upgrade --target $RuntimePackages -r "$Target\apps\backend\requirements-demo.txt"

@@ -53,7 +53,7 @@ $runtimePackages = "$Target\.runtime\python-packages"
 New-Item -ItemType Directory -Path $runtimePackages -Force | Out-Null
 & $python -m pip install --ignore-installed --upgrade --target $runtimePackages -r "$Target\apps\backend\requirements-demo.txt"
 if ($LASTEXITCODE -ne 0) { throw "Could not install backend dependencies" }
-& $python -c "import sys; sys.path.insert(0, r'$runtimePackages'); import fitz, fastapi, sqlalchemy, uvicorn"
+& $python -c "import sys; sys.path.insert(0, r'$runtimePackages'); import easyocr, fitz, fastapi, sqlalchemy, uvicorn"
 if ($LASTEXITCODE -ne 0) { throw "Backend dependency verification failed" }
 
 Write-Step "Installing prebuilt frontends"
