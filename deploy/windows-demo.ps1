@@ -43,68 +43,39 @@ Copy-Item -Path "$($sourceRoot.FullName)\*" -Destination $Target -Recurse -Force
 New-Item -ItemType File -Path "$Target\.deployment-marker" -Force | Out-Null
 
 Write-Step "Preparing Python runtime"
-$pythonRoot = "$Target\.runtime\python"
-$python = "$pythonRoot\python.exe"
-if (-not (Test-Path $python)) {
-    New-Item -ItemType Directory -Path "$Target\.runtime" -Force | Out-Null
-    $pythonInstaller = Join-Path $tempRoot "python-installer.exe"
-    Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe" -OutFile $pythonInstaller -UseBasicParsing
-    $installArgs = @(
-        "/quiet",
-        "InstallAllUsers=0",
-        "TargetDir=$pythonRoot",
-        "Include_pip=1",
-        "Include_test=0",
-        "Include_launcher=0",
-        "InstallLauncherAllUsers=0",
-        "PrependPath=0",
-        "Shortcuts=0"
-    )
-    $pythonInstall = Start-Process -FilePath $pythonInstaller -ArgumentList $installArgs -Wait -PassThru
-    if ($pythonInstall.ExitCode -ne 0 -or -not (Test-Path $python)) {
-        throw "Could not install the isolated Python runtime (exit code $($pythonInstall.ExitCode))"
-    }
+$python = "D:\python311\python.exe"
+if (-not (Test-Path $python)) { throw "Expected Python 3.11 at D:\python311\python.exe" }
+& $python -m pip --version
+if ($LASTEXITCODE -ne 0) {
+    throw "The existing Python 3.11 installation does not include pip"
 }
-$venvPython = "$Target\.venv\Scripts\python.exe"
-if (-not (Test-Path $venvPython)) {
-    & $python -m venv "$Target\.venv"
-    if ($LASTEXITCODE -ne 0 -or -not (Test-Path $venvPython)) {
-        throw "Could not create the isolated Python virtual environment"
-    }
-}
-& $venvPython -m pip install --upgrade pip
-& $venvPython -m pip install -r "$Target\apps\backend\requirements-demo.txt"
+$runtimePackages = "$Target\.runtime\python-packages"
+New-Item -ItemType Directory -Path $runtimePackages -Force | Out-Null
+& $python -m pip install --upgrade --target $runtimePackages -r "$Target\apps\backend\requirements-demo.txt"
+if ($LASTEXITCODE -ne 0) { throw "Could not install backend dependencies" }
 
-Write-Step "Preparing portable Node.js"
-$nodeRoot = "$Target\.runtime\node"
-$nodeExe = "$nodeRoot\node.exe"
-if (-not (Test-Path $nodeExe)) {
-    New-Item -ItemType Directory -Path "$Target\.runtime" -Force | Out-Null
-    $nodeIndex = Invoke-WebRequest -Uri "https://nodejs.org/dist/latest-v20.x/" -UseBasicParsing
-    $nodeFile = [regex]::Matches($nodeIndex.Content, 'node-v[0-9.]+-win-x64\.zip') | ForEach-Object Value | Select-Object -First 1
-    if (-not $nodeFile) { throw "Could not locate the latest Node.js 20 archive" }
-    $nodeZip = Join-Path $tempRoot $nodeFile
-    Invoke-WebRequest -Uri "https://nodejs.org/dist/latest-v20.x/$nodeFile" -OutFile $nodeZip -UseBasicParsing
-    Expand-Archive -LiteralPath $nodeZip -DestinationPath "$Target\.runtime" -Force
-    $expandedNode = Get-ChildItem "$Target\.runtime" -Directory | Where-Object Name -Like "node-v*-win-x64" | Select-Object -First 1
-    Move-Item -LiteralPath $expandedNode.FullName -Destination $nodeRoot
+Write-Step "Installing prebuilt frontends"
+$studentPrebuilt = "$Target\deploy\prebuilt\student"
+$adminPrebuilt = "$Target\deploy\prebuilt\admin"
+if (-not (Test-Path "$studentPrebuilt\index.html") -or -not (Test-Path "$adminPrebuilt\index.html")) {
+    throw "Prebuilt frontend files are missing from the deployment package"
 }
-$env:Path = "$nodeRoot;$env:Path"
-
-Write-Step "Building student and admin frontends"
-Push-Location "$Target\apps\frontend\student"
-& "$nodeRoot\npm.cmd" install --no-audit --no-fund
-& "$nodeRoot\npm.cmd" run build
-Pop-Location
-Push-Location "$Target\apps\frontend\admin"
-& "$nodeRoot\npm.cmd" install --no-audit --no-fund
-& "$nodeRoot\npm.cmd" run build
-Pop-Location
+New-Item -ItemType Directory -Path "$Target\apps\frontend\student\dist" -Force | Out-Null
+New-Item -ItemType Directory -Path "$Target\apps\frontend\admin\dist" -Force | Out-Null
+Copy-Item -Path "$studentPrebuilt\*" -Destination "$Target\apps\frontend\student\dist" -Recurse -Force
+Copy-Item -Path "$adminPrebuilt\*" -Destination "$Target\apps\frontend\admin\dist" -Recurse -Force
 
 Write-Step "Registering Windows startup task"
 Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue
-$arguments = '-m uvicorn app.demo:app --host 0.0.0.0 --port ' + $Port
-$action = New-ScheduledTaskAction -Execute $venvPython -Argument $arguments -WorkingDirectory "$Target\apps\backend"
+$launcherPath = "$Target\.runtime\start-demo.cmd"
+$launcher = @(
+    "@echo off",
+    "set `"PYTHONPATH=$runtimePackages`"",
+    "cd /d `"$Target\apps\backend`"",
+    "`"$python`" -m uvicorn app.demo:app --host 0.0.0.0 --port $Port"
+)
+Set-Content -LiteralPath $launcherPath -Value $launcher -Encoding Ascii
+$action = New-ScheduledTaskAction -Execute "cmd.exe" -Argument "/c `"$launcherPath`"" -WorkingDirectory "$Target\apps\backend"
 $trigger = New-ScheduledTaskTrigger -AtStartup
 $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
 Register-ScheduledTask -TaskName $TaskName -Action $action -Trigger $trigger -Principal $principal -Description "AI adaptive learning demo" | Out-Null
