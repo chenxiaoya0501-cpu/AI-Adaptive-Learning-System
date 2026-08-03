@@ -5,6 +5,7 @@ $Target = "D:\AI-Adaptive-Learning-System"
 $Python = "D:\python311\python.exe"
 $RuntimePackages = "$Target\.runtime\python-packages"
 $TaskName = "AI-Adaptive-Learning-System"
+$WatchdogTaskName = "$TaskName-Watchdog"
 $Port = 8000
 $RepositoryArchive = "https://codeload.github.com/chenxiaoya0501-cpu/AI-Adaptive-Learning-System/zip/refs/heads/main"
 
@@ -64,6 +65,8 @@ $LauncherPath = "$RuntimeDirectory\start_demo.py"
 $Launcher = @"
 import mimetypes
 import sys
+import time
+import traceback
 from pathlib import Path
 
 target = Path(r"$Target")
@@ -79,11 +82,18 @@ sys.path.insert(0, str(runtime_packages))
 
 import uvicorn
 
-uvicorn.run("app.demo:app", host="0.0.0.0", port=$Port, log_level="info")
+while True:
+    try:
+        uvicorn.run("app.demo:app", host="0.0.0.0", port=$Port, log_level="info")
+    except BaseException:
+        traceback.print_exc(file=log)
+    print("Server process stopped; restarting in 5 seconds.", file=log, flush=True)
+    time.sleep(5)
 "@
 Set-Content -LiteralPath $LauncherPath -Value $Launcher -Encoding UTF8
 
 Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false -ErrorAction SilentlyContinue
+Unregister-ScheduledTask -TaskName $WatchdogTaskName -Confirm:$false -ErrorAction SilentlyContinue
 $ExistingListener = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
 if ($ExistingListener) {
     $ExistingListener |
@@ -113,6 +123,40 @@ Register-ScheduledTask `
     -Principal $Principal `
     -Settings $Settings `
     -Description "Adaptive learning demo background service" |
+    Out-Null
+
+$WatchdogPath = "$RuntimeDirectory\watchdog.ps1"
+$Watchdog = @"
+`$listener = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
+if (-not `$listener) {
+    `$task = Get-ScheduledTask -TaskName "$TaskName" -ErrorAction SilentlyContinue
+    if (`$task) {
+        if (`$task.State -eq "Running") {
+            Stop-ScheduledTask -TaskName "$TaskName" -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 2
+        }
+        Start-ScheduledTask -TaskName "$TaskName" -ErrorAction SilentlyContinue
+    }
+}
+"@
+Set-Content -LiteralPath $WatchdogPath -Value $Watchdog -Encoding UTF8
+
+$WatchdogAction = New-ScheduledTaskAction `
+    -Execute "powershell.exe" `
+    -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$WatchdogPath`"" `
+    -WorkingDirectory $RuntimeDirectory
+$WatchdogTrigger = New-ScheduledTaskTrigger `
+    -Once `
+    -At (Get-Date).AddMinutes(1) `
+    -RepetitionInterval (New-TimeSpan -Minutes 1) `
+    -RepetitionDuration (New-TimeSpan -Days 3650)
+Register-ScheduledTask `
+    -TaskName $WatchdogTaskName `
+    -Action $WatchdogAction `
+    -Trigger $WatchdogTrigger `
+    -Principal $Principal `
+    -Settings (New-ScheduledTaskSettingsSet -StartWhenAvailable) `
+    -Description "Restarts the adaptive learning demo if port $Port stops listening" |
     Out-Null
 
 if (-not (Get-NetFirewallRule -DisplayName $TaskName -ErrorAction SilentlyContinue)) {

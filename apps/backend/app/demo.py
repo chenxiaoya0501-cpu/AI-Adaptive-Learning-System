@@ -14,6 +14,11 @@ mimetypes.add_type("text/javascript", ".mjs")
 APPS_DIR = Path(__file__).resolve().parents[2]
 STUDENT_DIST = APPS_DIR / "frontend" / "student" / "dist"
 ADMIN_DIST = APPS_DIR / "frontend" / "admin" / "dist"
+SPA_HEADERS = {
+    "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+    "Pragma": "no-cache",
+    "Expires": "0",
+}
 
 
 def _require_file(path: Path) -> Path:
@@ -32,7 +37,10 @@ if (ADMIN_DIST / "assets").is_dir():
 @app.get("/admin", include_in_schema=False)
 @app.get("/admin/{path:path}", include_in_schema=False)
 async def admin_spa(path: str = ""):
-    return FileResponse(_require_file(ADMIN_DIST / "index.html"))
+    return FileResponse(
+        _require_file(ADMIN_DIST / "index.html"),
+        headers=SPA_HEADERS,
+    )
 
 
 @app.get("/", include_in_schema=False)
@@ -41,4 +49,7 @@ async def student_spa(path: str = ""):
     requested = STUDENT_DIST / path
     if path and requested.is_file() and STUDENT_DIST in requested.resolve().parents:
         return FileResponse(requested)
-    return FileResponse(_require_file(STUDENT_DIST / "index.html"))
+    return FileResponse(
+        _require_file(STUDENT_DIST / "index.html"),
+        headers=SPA_HEADERS,
+    )
