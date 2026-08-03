@@ -9,9 +9,9 @@ import './index.css'
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ConfigProvider locale={zhCN}>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+    <BrowserRouter basename="/admin">
+      <App />
+    </BrowserRouter>
     </ConfigProvider>
   </React.StrictMode>,
 )
